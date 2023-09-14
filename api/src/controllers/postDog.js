@@ -4,7 +4,7 @@ const {getAllDogsApi} = require('./getAllDogs');
 
 async function postDog(req, res) {
 try {
-    const {image, name, height, weight, life_span, temperament} = req.body;
+    const {image, name, height, weight,temperament, life_span} = req.body;
     // console.log(req.doby);
     // console.log(image);
     // console.log(name);
@@ -26,7 +26,7 @@ try {
     }
     
     // Buscar o Crear el perro
-    const [dog, created] = await Dog.findOrCreate({where:{image, name, height, weight, life_span}});
+    const [dog, created] = await Dog.findOrCreate({where:{name}, defaults:{image,name, height, weight, life_span}});
 
     // si created es true significa que ya habia un perro con estos datos por lo tanto regresamos que ya existe
     if (!created || dogNameApi) return res.status(404).send('The dog already exist');
@@ -35,25 +35,26 @@ try {
     let tempeDb = await Temperaments.findAll({
         where: {name:temperament}
     })
+
 // Relacion entre modelo dog y temperaments(asocia los temperamentos al perro)
     await dog.addTemperaments(tempeDb);
 
-    return res.status(200).json({dog: dog, message:'The dog was created successfully'});
+    let newDog = await Dog.findByPk(dog.id,{
+        include:{
+            model:Temperaments,
+            attributes: ["name"],
+            through: {
+                attributes: []
+            }
+        }
+    })
+//  console.log(newDog);
+
+    return res.status(200).json({dog: newDog, message:'The dog was created successfully'});
 } catch (error) {
     return res.status(500).send(error.message);
 }
 
 }
-
-// Dog.create({
-//     name, image, height, weight
-// }).then(async (dog) =>{
-//     const temp = await Temperaments.findAll({
-//         where:{name: temperament}
-//     });
-
-//     await dog.addTemperament(temp);
-//     res.status(200).json(dog);
-// })
 
 module.exports = postDog;

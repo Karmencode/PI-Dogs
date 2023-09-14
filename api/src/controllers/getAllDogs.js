@@ -43,11 +43,11 @@ async function getAllDogsDb() {
                 name: dog.name,
                 height: dog.height,
                 weight: dog.weight,
-                temperament: dog.temperament,
+                temperament: dog.temperaments.map(e => {return e.name}).join(','), /* recorrer el array que devuelve la DB y solo quedarse con el name */
                 life_span: dog.life_span
             }
         })
-
+        console.log(dogsDb);
         return dogsDb;
 
 }
